@@ -1,0 +1,10 @@
+# Ignore temporary files
+backup/
+temp/
+
+
+# Ignore Vivado project files
+*.cache/
+*.hw/
+*.runs/
+*.sim/
