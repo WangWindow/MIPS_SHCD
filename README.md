@@ -1,4 +1,13 @@
-# 系统硬件综合设计（MPIS版） 🚀
+<!--
+ * @FilePath: README.md
+ * @Author: WangWindow 1598593280@qq.com
+ * @Date: 2024-11-29 20:06:25
+ * @LastEditors: WangWindow
+ * @LastEditTime: 2024-12-26 20:23:01
+ * 2024 by WangWindow, All Rights Reserved.
+ * @Descripttion:
+-->
+# 系统硬件综合设计（MIPS版） 🚀
 
 ## Created by [ModestWang](https://github.com/ModestWang) & [hfutxcyxy](https://www.zhihu.com/people/marcodortmund11) 😊✌️
 
