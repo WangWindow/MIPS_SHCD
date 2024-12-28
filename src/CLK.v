@@ -1,13 +1,12 @@
 /*
  * @FilePath: CLK.v
- * @Author: ModestWang 1598593280@qq.com
+ * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 11:42:22
- * @LastEditors: ModestWang
+ * @LastEditors: WangWindow
  * @LastEditTime: 2024-11-06 09:24:02
- * 2024 by ModestWang, All Rights Reserved.
+ * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: 时钟模块
  */
-`timescale 1ns / 1ns
 
 module CLK_DIV #(
     parameter DIV = 8  // 分频系数

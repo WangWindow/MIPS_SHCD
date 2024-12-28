@@ -1,13 +1,13 @@
 /*
  * @FilePath: top.v
- * @Author: ModestWang 1598593280@qq.com
+ * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-11-02 00:22:38
- * @LastEditors: ModestWang
- * @LastEditTime: 2024-11-06 14:34:26
- * 2024 by ModestWang, All Rights Reserved.
+ * @LastEditors: WangWindow
+ * @LastEditTime: 2024-12-28 13:03:43
+ * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: 顶层文件
  */
-`timescale 1ns / 1ns
+
 `define CPU_CLK_DIV 2500_000
 
 module top (

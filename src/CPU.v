@@ -1,13 +1,12 @@
 /*
  * @FilePath: CPU.v
- * @Author: ModestWang 1598593280@qq.com
+ * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 10:05:04
- * @LastEditors: ModestWang
+ * @LastEditors: WangWindow
  * @LastEditTime: 2024-11-06 14:53:52
- * 2024 by ModestWang, All Rights Reserved.
+ * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: CPU
  */
-`timescale 1ns / 1ns
 
 `define CPU_CLK_DIV 2500_000
 `define IF 3'b000

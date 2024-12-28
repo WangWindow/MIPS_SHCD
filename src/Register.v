@@ -1,13 +1,12 @@
 /*
  * @FilePath: Register.v
- * @Author: ModestWang 1598593280@qq.com
+ * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 00:10:55
- * @LastEditors: ModestWang
+ * @LastEditors: WangWindow
  * @LastEditTime: 2024-11-03 01:50:56
- * 2024 by ModestWang, All Rights Reserved.
+ * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: 寄存器
  */
-`timescale 1ns / 1ns
 
 // 32 位寄存器
 module Register_file (

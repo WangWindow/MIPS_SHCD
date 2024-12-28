@@ -1,13 +1,13 @@
 /*
  * @FilePath: Memory.v
- * @Author: ModestWang 1598593280@qq.com
+ * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 10:11:29
- * @LastEditors: ModestWang
+ * @LastEditors: WangWindow
  * @LastEditTime: 2024-11-06 15:32:34
- * 2024 by ModestWang, All Rights Reserved.
+ * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: 内存
  */
-`timescale 1ns / 1ns
+
 `define MEMORY_FILE "it.txt"
 
 // 内存中的数据存储顺序可以是小端或大端。

@@ -1,13 +1,12 @@
 /*
  * @FilePath: Other.v
- * @Author: ModestWang 1598593280@qq.com
+ * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 01:47:14
- * @LastEditors: ModestWang
+ * @LastEditors: WangWindow
  * @LastEditTime: 2024-11-02 22:29:27
- * 2024 by ModestWang, All Rights Reserved.
+ * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: 其他模块
  */
-`timescale 1ns / 1ns
 
 // 控制 8 个数码管动态显示的模块
 module Show8 (

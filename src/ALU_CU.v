@@ -1,14 +1,13 @@
 /*
  * @FilePath: ALU_CU.v
- * @Author: ModestWang 1598593280@qq.com
+ * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-07 23:37:57
- * @LastEditors: ModestWang
+ * @LastEditors: WangWindow
  * @LastEditTime: 2024-11-02 21:41:31
- * 2024 by ModestWang, All Rights Reserved.
+ * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: ALU 和 CU
  */
 // TODO: 修改ALUOp的位数，并修改ALU_Control的产生逻辑，使之符合更多的指令
-`timescale 1ns / 1ns
 
 `define SLL 4'b0000
 `define SRL 4'b0001
