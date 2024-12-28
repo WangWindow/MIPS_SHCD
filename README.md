@@ -3,11 +3,16 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-11-29 20:06:25
  * @LastEditors: WangWindow
- * @LastEditTime: 2024-12-26 20:23:01
+ * @LastEditTime: 2024-12-28 13:11:42
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion:
 -->
 # 系统硬件综合设计（MIPS版） 🚀
+
+<div style="border: 1px solid; padding: 10px;">
+  <p>“在关键问题上，没有什么细节是小事。”</p>
+  <p style="text-align: right;">--法国谚语</p>
+</div>
 
 ## Created by [WangWindow](https://github.com/WangWindow) & [hfutxcyxy](https://www.zhihu.com/people/marcodortmund11) 😊✌️
 
