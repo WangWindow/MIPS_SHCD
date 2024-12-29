@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 10:05:04
  * @LastEditors: WangWindow
- * @LastEditTime: 2024-12-29 17:45:08
+ * @LastEditTime: 2024-12-29 19:27:06
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: CPU
  */
@@ -138,19 +138,19 @@ module CPU (
 
 
     // TODO: Instruction Memory 模块实例化
-    // reg Instruction_Memory_en = 1;
-    // wire Instruction_Memory_clk = clk;
-    // MyRom u_Instruction_Memory (
-    //     .clka(Instruction_Memory_clk),  // input wire clka
-    //     .ena(Instruction_Memory_en),  // input wire ena
-    //     .addra(PC),  // input wire [7 : 0] addra
-    //     .douta(Instruction)  // output wire [31 : 0] douta
-    // );
-
-    ROM u_Instruction_Memory (
-        .raddr(PC),
-        .rdata(Instruction)
+    reg Instruction_Memory_en = 1;
+    wire Instruction_Memory_clk = clk;
+    MyRom u_Instruction_Memory (
+        .clka(Instruction_Memory_clk),  // input wire clka
+        .ena(Instruction_Memory_en),  // input wire ena
+        .addra(PC),  // input wire [7 : 0] addra
+        .douta(Instruction)  // output wire [31 : 0] douta
     );
+
+    // ROM u_Instruction_Memory (
+    //     .raddr(PC),
+    //     .rdata(Instruction)
+    // );
 
     // TODO: 控制单元模块实例化
     CU u_CU (
@@ -197,24 +197,24 @@ module CPU (
     );
 
     // TODO: Data Memory 模块实例化
-    // reg Data_Memory_en = 1;
-    // wire Data_Memory_clk = clk;
-    // MyRam u_Data_Memory (
-    //     .clka(Data_Memory_clk),  // input wire clka
-    //     .ena(Data_Memory_en),  // input wire ena
-    //     .wea(~MemWrite),  // input wire [0 : 0] wea
-    //     .addra(ALU_out),  // input wire [4 : 0] addra
-    //     .dina(rdata2),  // input wire [31 : 0] dina
-    //     .douta(DataMem_out)  // output wire [31 : 0] douta
-    // );
-
-    RAM u_Data_Memory (
-        .re   (MemRead),
-        .we   (MemWrite),
-        .addr (ALU_out),
-        .wdata(rdata2),
-        .rdata(DataMem_out)
+    reg Data_Memory_en = 1;
+    wire Data_Memory_clk = clk;
+    MyRam u_Data_Memory (
+        .clka(Data_Memory_clk),  // input wire clka
+        .ena(Data_Memory_en),  // input wire ena
+        .wea(MemWrite),  // input wire [0 : 0] wea
+        .addra(ALU_out),  // input wire [7 : 0] addra
+        .dina(rdata2),  // input wire [31 : 0] dina
+        .douta(DataMem_out)  // output wire [31 : 0] douta
     );
+
+    // RAM u_Data_Memory (
+    //     .re   (MemRead),
+    //     .we   (MemWrite),
+    //     .addr (ALU_out),
+    //     .wdata(rdata2),
+    //     .rdata(DataMem_out)
+    // );
 
     // TODO: 初始化和复位
     initial begin

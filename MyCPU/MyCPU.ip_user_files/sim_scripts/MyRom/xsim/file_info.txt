@@ -1,0 +1,2 @@
+MyRom.v,verilog,xil_defaultlib,../../../../MyCPU.gen/sources_1/ip/MyRom/sim/MyRom.v,
+glbl.v,Verilog,xil_defaultlib,glbl.v
