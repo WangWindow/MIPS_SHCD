@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 10:11:29
  * @LastEditors: WangWindow
- * @LastEditTime: 2024-11-06 15:32:34
+ * @LastEditTime: 2024-12-28 21:06:54
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: 内存
  */
@@ -68,6 +68,7 @@ endmodule
 //         end
 //     end
 // endmodule
+
 module ROM (
     input [31:0] raddr,  // 读取地址
     output reg [31:0] rdata  // 读出数据

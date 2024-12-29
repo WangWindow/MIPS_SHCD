@@ -7,7 +7,6 @@
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: ALU 和 CU
  */
-// TODO: 修改ALUOp的位数，并修改ALU_Control的产生逻辑，使之符合更多的指令
 
 `define SLL 4'b0000
 `define SRL 4'b0001

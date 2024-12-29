@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-11-02 00:22:38
  * @LastEditors: WangWindow
- * @LastEditTime: 2024-12-28 13:03:43
+ * @LastEditTime: 2024-12-29 16:09:36
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: 顶层文件
  */
@@ -40,12 +40,6 @@ module top (
         .reset_n(reset_n),
         .result (result)
     );
-    // Test u_test (
-    //     .en     (CPU_en),
-    //     .clk    (clk),
-    //     .reset_n(reset_n),
-    //     .result (result)
-    // );
 
     // 结果转换为 BCD 码
     // BinaryToBCD #(

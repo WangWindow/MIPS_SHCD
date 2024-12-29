@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 10:05:04
  * @LastEditors: WangWindow
- * @LastEditTime: 2024-11-06 14:53:52
+ * @LastEditTime: 2024-12-29 17:45:08
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: CPU
  */
@@ -136,12 +136,21 @@ module CPU (
         endcase
     end
 
+
     // TODO: Instruction Memory 模块实例化
+    // reg Instruction_Memory_en = 1;
+    // wire Instruction_Memory_clk = clk;
+    // MyRom u_Instruction_Memory (
+    //     .clka(Instruction_Memory_clk),  // input wire clka
+    //     .ena(Instruction_Memory_en),  // input wire ena
+    //     .addra(PC),  // input wire [7 : 0] addra
+    //     .douta(Instruction)  // output wire [31 : 0] douta
+    // );
+
     ROM u_Instruction_Memory (
         .raddr(PC),
         .rdata(Instruction)
     );
-    // assign Instruction = {memory[3+PC], memory[2+PC], memory[1+PC], memory[PC]};
 
     // TODO: 控制单元模块实例化
     CU u_CU (
@@ -188,6 +197,17 @@ module CPU (
     );
 
     // TODO: Data Memory 模块实例化
+    // reg Data_Memory_en = 1;
+    // wire Data_Memory_clk = clk;
+    // MyRam u_Data_Memory (
+    //     .clka(Data_Memory_clk),  // input wire clka
+    //     .ena(Data_Memory_en),  // input wire ena
+    //     .wea(~MemWrite),  // input wire [0 : 0] wea
+    //     .addra(ALU_out),  // input wire [4 : 0] addra
+    //     .dina(rdata2),  // input wire [31 : 0] dina
+    //     .douta(DataMem_out)  // output wire [31 : 0] douta
+    // );
+
     RAM u_Data_Memory (
         .re   (MemRead),
         .we   (MemWrite),
@@ -196,34 +216,10 @@ module CPU (
         .rdata(DataMem_out)
     );
 
-    // // TODO: 初始化和复位
+    // TODO: 初始化和复位
     initial begin
-        // {memory[3], memory[2], memory[1], memory[0]} <= 32'b00100001000010000000000000001010;
         $display("CPU start");
-        // state <= `IF;
-        // next_state <= `ID;
-
-        // CU_en <= 0;
-        // ALU_en <= 0;
-
-        // IR <= 32'b0;
-        // PC <= 32'b0;
         Next_PC <= 32'b0;
-        // OPcode <= 6'b0;
-        // Func <= 6'b0;
-
-        // waddr <= 32'b0;
-        // wdata <= 32'b0;
-        // raddr1 <= 32'b0;
-        // raddr2 <= 32'b0;
-        // Immediate <= 32'b0;
-        // ALU_in1 <= 32'b0;
-        // ALU_in2 <= 32'b0;
-
-        // PC_b <= 32'b0;
-        // Jump_addr <= 32'b0;
-        // Next_PC_t <= 32'b0;
-        // result <= 32'b1000;
     end
 
 endmodule
