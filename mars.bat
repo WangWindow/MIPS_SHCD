@@ -1,2 +1,2 @@
 
-java -jar "./MIPS Generator/Mars45.jar"
+java -jar "./Gen/Mars45.jar"

@@ -4,8 +4,8 @@
 // Tool Version: Vivado v.2024.1 (win64) Build 5076996 Wed May 22 18:37:14 MDT 2024
 // Date        : Sun Dec 29 19:50:20 2024
 // Host        : XIAOXIN running 64-bit major release  (build 9200)
-// Command     : write_verilog -force -mode synth_stub
-//               c:/Users/weidong/Desktop/MIPS_SHCD/MyCPU/MyCPU.gen/sources_1/ip/MyRam/MyRam_stub.v
+// Command     : write_verilog -force -mode synth_stub -rename_top MyRam -prefix
+//               MyRam_ MyRam_stub.v
 // Design      : MyRam
 // Purpose     : Stub declaration of top-level module interface
 // Device      : xc7z020clg400-2

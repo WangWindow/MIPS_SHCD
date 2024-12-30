@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 10:05:04
  * @LastEditors: WangWindow
- * @LastEditTime: 2024-12-29 19:27:06
+ * @LastEditTime: 2024-12-29 20:34:55
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: CPU
  */
@@ -76,7 +76,7 @@ module CPU (
     wire [31:0] DataMem_out;  // 数据存储器的数据输出
 
     always @(posedge clk) begin
-        result <= wdata;
+        result <= IR;
     end
 
     // 状态机
@@ -143,7 +143,7 @@ module CPU (
     MyRom u_Instruction_Memory (
         .clka(Instruction_Memory_clk),  // input wire clka
         .ena(Instruction_Memory_en),  // input wire ena
-        .addra(PC),  // input wire [7 : 0] addra
+        .addra(PC >> 2),  // input wire [7 : 0] addra
         .douta(Instruction)  // output wire [31 : 0] douta
     );
 
@@ -203,7 +203,7 @@ module CPU (
         .clka(Data_Memory_clk),  // input wire clka
         .ena(Data_Memory_en),  // input wire ena
         .wea(MemWrite),  // input wire [0 : 0] wea
-        .addra(ALU_out),  // input wire [7 : 0] addra
+        .addra(ALU_out >> 2),  // input wire [7 : 0] addra
         .dina(rdata2),  // input wire [31 : 0] dina
         .douta(DataMem_out)  // output wire [31 : 0] douta
     );

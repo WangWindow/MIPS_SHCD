@@ -1,0 +1,2 @@
+MyVIO.v,verilog,xil_defaultlib,../../../../MyCPU.gen/sources_1/ip/MyVIO/sim/MyVIO.v,incdir="../../../../MyCPU.gen/sources_1/ip/MyVIO/hdl/verilog"incdir="../../../../MyCPU.gen/sources_1/ip/MyVIO/hdl"
+glbl.v,Verilog,xil_defaultlib,glbl.v
