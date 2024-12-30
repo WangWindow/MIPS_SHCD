@@ -3,17 +3,12 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 10:05:04
  * @LastEditors: WangWindow
- * @LastEditTime: 2024-12-29 20:34:55
+ * @LastEditTime: 2024-12-30 17:48:34
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: CPU
  */
 
-`define CPU_CLK_DIV 2500_000
-`define IF 3'b000
-`define ID 3'b001
-`define EX 3'b010
-`define MEM 3'b011
-`define WB 3'b100
+`include "defines.v"
 
 // CPU
 module CPU (
@@ -27,6 +22,8 @@ module CPU (
     reg ALU_en;
 
     reg [7:0] memory[0:3];
+    reg [31:0] Hi;
+    reg [31:0] Lo;
 
     // 取指阶段
     wire [31:0] Instruction;  // 指令
@@ -76,81 +73,98 @@ module CPU (
     wire [31:0] DataMem_out;  // 数据存储器的数据输出
 
     always @(posedge clk) begin
-        result <= IR;
+        result <= ALU_out;
     end
 
-    // 状态机
+    // 状态机定义
     reg [2:0] state, next_state;
+
+    // 状态迁移时序逻辑
     always @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin
             state <= `IF;
+            PC <= 32'b0;
+            IR <= 32'b0;
+            Hi <= 32'b0;
+            Lo <= 32'b0;
         end else if (en) begin
             state <= next_state;
-        end else begin
-            state <= `IF;
+            case (state)
+                `IF: begin
+                    PC <= Next_PC;
+                    IR <= Instruction;
+                end
+                `EX: begin
+                    case (ALU_Control)
+                        `MUL, `MULU, `DIV, `DIVU: begin
+                            Hi <= ALU_Hi;
+                            Lo <= ALU_Lo;
+                        end
+                    endcase
+                end
+                `WB: begin
+                    if (RegWrite) begin
+                        if (ALU_Control == `MFHI) wdata <= Hi;
+                        else if (ALU_Control == `MFLO) wdata <= Lo;
+                        else wdata <= (MemtoReg) ? DataMem_out : ALU_out;
+                    end
+                end
+            endcase
         end
     end
+
+    // 状态转换和控制信号组合逻辑
     always @(*) begin
+        // 默认值设置
+        CU_en = 1'b0;
+        ALU_en = 1'b0;
+        next_state = state;
+
         case (state)
             `IF: begin
-                CU_en <= 1'b0;
-                ALU_en <= 1'b0;
-                PC <= Next_PC;
-                IR <= Instruction;
-                next_state <= `ID;
+                next_state = `ID;
             end
             `ID: begin
-                CU_en <= 1'b1;
-                ALU_en <= 1'b0;
-                OPcode <= IR[31:26];
-                Func <= IR[5:0];
-                raddr1 <= IR[25:21];
-                raddr2 <= IR[20:16];
-                Immediate <= {{16{IR[15]}}, IR[15:0]};
-                next_state <= `EX;
+                CU_en = 1'b1;
+                OPcode = IR[31:26];
+                Func = IR[5:0];
+                raddr1 = IR[25:21];
+                raddr2 = IR[20:16];
+                Immediate = {{16{IR[15]}}, IR[15:0]};
+                next_state = `EX;
             end
             `EX: begin
-                CU_en <= 1'b0;
-                ALU_en <= 1'b1;
-                ALU_in1 <= rdata1;
-                ALU_in2 <= (ALUSrc_B) ? Immediate : rdata2;
-                PC_b <= {Immediate[29:0], 2'b0} + PC_Add_4;
-                Jump_addr <= {PC_Add_4[31:28], {IR[25:21], 2'b0}};
-                Next_PC_t <= (Zero_Branch) ? PC_b : PC_Add_4;
-                Next_PC <= (Jump) ? Jump_addr : Next_PC_t;
-                next_state <= `MEM;
+                ALU_en = 1'b1;
+                ALU_in1 = rdata1;
+                ALU_in2 = (ALUSrc_B) ? Immediate : rdata2;
+                PC_b = {Immediate[29:0], 2'b0} + PC_Add_4;
+                Jump_addr = {PC_Add_4[31:28], IR[25:0], 2'b0};
+                Next_PC_t = (Zero_Branch) ? PC_b : PC_Add_4;
+                Next_PC = (Jump) ? Jump_addr : Next_PC_t;
+                next_state = `MEM;
             end
             `MEM: begin
-                CU_en <= 1'b0;
-                ALU_en <= 1'b0;
-                next_state <= `WB;
+                next_state = `WB;
             end
             `WB: begin
-                waddr <= (RegDst) ? IR[15:11] : IR[20:16];
-                wdata <= (MemtoReg) ? DataMem_out : ALU_out;
-                next_state <= `IF;
+                waddr = (RegDst) ? IR[15:11] : IR[20:16];
+                next_state = `IF;
             end
             default: begin
-                next_state <= `IF;
+                next_state = `IF;
             end
         endcase
     end
-
 
     // TODO: Instruction Memory 模块实例化
     reg Instruction_Memory_en = 1;
     wire Instruction_Memory_clk = clk;
     MyRom u_Instruction_Memory (
-        .clka(Instruction_Memory_clk),  // input wire clka
-        .ena(Instruction_Memory_en),  // input wire ena
-        .addra(PC >> 2),  // input wire [7 : 0] addra
-        .douta(Instruction)  // output wire [31 : 0] douta
+        .clka (Instruction_Memory_clk),
+        .ena  (Instruction_Memory_en),
+        .addra(PC >> 2),
+        .douta(Instruction)
     );
-
-    // ROM u_Instruction_Memory (
-    //     .raddr(PC),
-    //     .rdata(Instruction)
-    // );
 
     // TODO: 控制单元模块实例化
     CU u_CU (
@@ -176,15 +190,17 @@ module CPU (
         .re     (CU_en),
         .we     (RegWrite),
         .waddr  (waddr),
+        .wdata  (wdata),
         .raddr1 (raddr1),
         .raddr2 (raddr2),
-        .wdata  (wdata),
         .rdata1 (rdata1),
         .rdata2 (rdata2)
     );
 
     // TODO: ALU 模块实例化
     ALU u_ALU (
+        .clk        (clk),
+        .reset_n    (reset_n),
         .A          (ALU_in1),
         .B          (ALU_in2),
         .ALU_Control(ALU_Control),
@@ -192,7 +208,7 @@ module CPU (
         .Hi         (ALU_Hi),
         .Lo         (ALU_Lo),
         .Zero       (ALU_zero),
-        .Overflow   (ALU_overflow),
+        .Over       (ALU_overflow),
         .Signed     (ALU_signed)
     );
 
@@ -200,26 +216,50 @@ module CPU (
     reg Data_Memory_en = 1;
     wire Data_Memory_clk = clk;
     MyRam u_Data_Memory (
-        .clka(Data_Memory_clk),  // input wire clka
-        .ena(Data_Memory_en),  // input wire ena
-        .wea(MemWrite),  // input wire [0 : 0] wea
-        .addra(ALU_out >> 2),  // input wire [7 : 0] addra
-        .dina(rdata2),  // input wire [31 : 0] dina
-        .douta(DataMem_out)  // output wire [31 : 0] douta
+        .clka (Data_Memory_clk),
+        .ena  (Data_Memory_en),
+        .wea  (MemWrite),
+        .addra(ALU_out >> 2),
+        .dina (rdata2),
+        .douta(DataMem_out)
     );
-
-    // RAM u_Data_Memory (
-    //     .re   (MemRead),
-    //     .we   (MemWrite),
-    //     .addr (ALU_out),
-    //     .wdata(rdata2),
-    //     .rdata(DataMem_out)
-    // );
 
     // TODO: 初始化和复位
     initial begin
         $display("CPU start");
         Next_PC <= 32'b0;
     end
+endmodule
 
+// 32 位寄存器堆
+module Register_file (
+    input             clk,      //时钟信号，上述沿写入数据
+    input             reset_n,  //复位信号
+    input             re,       //读使能
+    input             we,       //写使能
+    input      [ 4:0] waddr,    //写寄存器的地址
+    input      [31:0] wdata,    //写寄存器数据
+    input      [ 4:0] raddr1,   //所需读取的寄存器的地址
+    input      [ 4:0] raddr2,   //所需读取的寄存器的地址
+    output reg [31:0] rdata1,   //raddr1所对应寄存器的输出数据
+    output reg [31:0] rdata2    //raddr2所对应寄存器的输出数据
+);
+    reg [31:0] Regs[0:31];  // 32 个寄存器
+
+    // 读写操作
+    integer i;
+    always @(posedge clk or negedge reset_n) begin
+        if (!reset_n) begin
+            for (i = 0; i < 32; i = i + 1) begin
+                Regs[i] <= 32'h00000000;
+            end
+        end else begin
+            if (re) begin
+                rdata1 <= Regs[raddr1];
+                rdata2 <= Regs[raddr2];
+            end else if (we) begin
+                Regs[waddr] <= wdata;
+            end
+        end
+    end
 endmodule
