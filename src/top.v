@@ -8,7 +8,7 @@
  * @Descripttion: 顶层文件
  */
 
-`define CPU_CLK_DIV 2500_000
+`include "defines.v"
 
 module top (
     input  sys_clk,  // 时钟信号

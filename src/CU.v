@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-12-26 20:33:00
  * @LastEditors: WangWindow
- * @LastEditTime: 2024-12-30 16:02:14
+ * @LastEditTime: 2024-12-30 20:10:33
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: CU
  */
@@ -32,17 +32,19 @@ module CU (
     wire IFormat_A;  // I 型指令：算术型：操作数是寄存器和立即数的算数指令
     wire IFormat_B;  // I 型指令：分支型：分支型指令使用到减法操作
     wire JFormat;  // J 型指令
+    wire MVFormat;  // MV 型指令
     wire [2:0] ALU_op;  // ALU 操作类型
     wire [4:0] ALU_Control_t;
 
     // 控制信号生成
     // 由于一条指令只可能为一种类型，所以只有一个信号为1，其余为0
     nor nor1 (RFormat, OPcode[5], OPcode[4], OPcode[3], OPcode[2], OPcode[1], OPcode[0]);  // 000000
-    and and5b1 (IFormat_L, OPcode[5], ~OPcode[3]);  // 100xxx
-    and and5b2 (IFormat_S, OPcode[5], OPcode[3]);  // 101xxx
-    and and5b3 (IFormat_A, ~OPcode[5], OPcode[3]);  // 001xxx
-    and and5b4 (IFormat_B, ~OPcode[5], ~OPcode[3], OPcode[2]);  // 0001xx
-    and and5b5 (JFormat, ~OPcode[5], ~OPcode[3], ~OPcode[2], OPcode[1]);  // 00101x
+    and and5b1 (IFormat_L, OPcode[5], ~OPcode[4], ~OPcode[3]);  // 100xxx
+    and and5b2 (IFormat_S, OPcode[5], ~OPcode[4], OPcode[3]);  // 101xxx
+    and and5b3 (IFormat_A, ~OPcode[5], ~OPcode[4], OPcode[3]);  // 001xxx
+    and and5b4 (IFormat_B, ~OPcode[5], ~OPcode[4], ~OPcode[3], OPcode[2]);  // 0001xx
+    and and5b5 (JFormat, ~OPcode[5], ~OPcode[4], ~OPcode[3], ~OPcode[2], OPcode[1]);  // 00001x
+    and and5b6 (MVFormat, ~OPcode[5], ~OPcode[4], ~OPcode[3], ~OPcode[2], ~OPcode[1]);  // 00000x
 
     // 000: IFormat_L/IFormat_S; 100: RFormat; 010: IFormat_A; 001: IFormat_B
     assign ALU_op = {RFormat, IFormat_A, IFormat_B};

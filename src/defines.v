@@ -9,14 +9,15 @@
  */
 
 // CPU 时钟分频系数
-`define CPU_CLK_DIV 2500_000
+`define CPU_CLK_DIV 5_000_000
 
-// 指令处理状态
-`define IF 3'b000
-`define ID 3'b001
-`define EX 3'b010
-`define MEM 3'b011
-`define WB 3'b100
+    // 定义流水线阶段
+    `define IF  3'b000
+    `define ID  3'b001
+    `define EX  3'b010
+    `define MEM 3'b011
+    `define WB  3'b100
+    `define NOP 3'b111 // 空指令
 
 // ALU_Ctrl 操作类型
 `define SLL 5'b00000
