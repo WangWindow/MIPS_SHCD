@@ -1,19 +1,60 @@
 /*
- * @FilePath: Other.v
+ * @FilePath: Show.v
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 01:47:14
  * @LastEditors: WangWindow
- * @LastEditTime: 2024-11-02 22:29:27
+ * @LastEditTime: 2025-01-01 15:25:11
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: 其他模块
  */
 
-// 控制 8 个数码管动态显示的模块
-module Show8 (
+// 控制 8 个数码管显示(使用BX71开发板)
+module Show (
     input en,  //数码管显示使能
     input clk,  //50M
     input reset_n,  //复位信号,低有效
-    input [31:0] display_data,  // 8个BCD码
+    input [31:0] data,  // 8个BCD码
+
+    output sh_cp,  //移位寄存器时钟
+    output st_cp,  //存储寄存器时钟
+    output ds  //串行数据输入
+);
+    wire [7:0] sel;  // 数码管位选（选择当前要显示的数码管）
+    wire [6:0] seg;  // 数码管段选（当前要显示的内容）
+
+    // 数码管段选和位选模块实例化
+    Show_Gen u_Show_Gen (
+        // input
+        .clk(sys_clk),
+        .reset_n(reset_n),
+        .en(en),
+        .data(data),
+        // output
+        .sel(sel),
+        .seg(seg)
+    );
+    // 74HC595驱动模块实例化
+    HC595_Driver u_HC595_Driver (
+        // input
+        .clk(sys_clk),
+        .reset_n(reset_n),
+        .data({1'd1, seg, sel}),
+        .s_en(en),
+        // output
+        .sh_cp(sh_cp),
+        .st_cp(st_cp),
+        .ds(ds)
+    );
+endmodule
+
+
+// 数码管段选和位选的模块
+module Show_Gen (
+    input en,  //数码管显示使能
+    input clk,  //50M
+    input reset_n,  //复位信号,低有效
+    input [31:0] data,  // 8个BCD码
+
     output [7:0] sel,  //数码管位选（选择当前要显示的数码管）
     output reg [6:0] seg  //数码管段选（当前要显示的内容）
 );
@@ -46,14 +87,14 @@ module Show8 (
 
     always @(*) begin
         case (sel_r)
-            8'b0000_0001: data_tmp = display_data[3:0];
-            8'b0000_0010: data_tmp = display_data[7:4];
-            8'b0000_0100: data_tmp = display_data[11:8];
-            8'b0000_1000: data_tmp = display_data[15:12];
-            8'b0001_0000: data_tmp = display_data[19:16];
-            8'b0010_0000: data_tmp = display_data[23:20];
-            8'b0100_0000: data_tmp = display_data[27:24];
-            8'b1000_0000: data_tmp = display_data[31:28];
+            8'b0000_0001: data_tmp = data[3:0];
+            8'b0000_0010: data_tmp = data[7:4];
+            8'b0000_0100: data_tmp = data[11:8];
+            8'b0000_1000: data_tmp = data[15:12];
+            8'b0001_0000: data_tmp = data[19:16];
+            8'b0010_0000: data_tmp = data[23:20];
+            8'b0100_0000: data_tmp = data[27:24];
+            8'b1000_0000: data_tmp = data[31:28];
             default: data_tmp = 4'b0000;
         endcase
     end
@@ -83,11 +124,13 @@ module Show8 (
 
 endmodule
 
+// 74HC595驱动模块
 module HC595_Driver (
     input clk,  //50M
     input reset_n,  //复位信号,低有效
     input [15:0] data,  //数据输入
     input s_en,  //数据输入使能
+
     output reg sh_cp,  //移位寄存器时钟
     output reg st_cp,  //存储寄存器时钟
     output reg ds  //串行数据输入
@@ -251,27 +294,28 @@ module HC595_Driver (
 endmodule
 
 // 二进制转 BCD 码
-module BinaryToBCD #(
-    parameter BINARY_WIDTH = 32,
-    parameter BCD_WIDTH = 32
-) (
-    input [BINARY_WIDTH-1:0] binary,  // 参数化位宽的二进制输入
-    output reg [BCD_WIDTH-1:0] bcd  // 参数化位宽的BCD输出
-);
-    integer i, j;
-    always @(binary) begin
-        bcd = {BCD_WIDTH{1'b0}};  // 初始化BCD输出为0
+// module BinaryToBCD #(
+//     parameter BINARY_WIDTH = 32,
+//     parameter BCD_WIDTH = 32
+// ) (
+//     input [BINARY_WIDTH-1:0] binary,  // 参数化位宽的二进制输入
 
-        // 移位和加3算法
-        for (i = BINARY_WIDTH - 1; i >= 0; i = i - 1) begin
-            // 检查每个BCD位是否大于等于5
-            for (j = 0; j < (BCD_WIDTH >> 2); j = j + 1) begin
-                if (bcd[(j<<2)+:4] >= 5) begin
-                    bcd[(j<<2)+:4] = bcd[(j<<2)+:4] + 3;
-                end
-            end
-            // 左移一位并添加当前二进制位
-            bcd = {bcd[BCD_WIDTH-2:0], binary[i]};
-        end
-    end
-endmodule
+//     output reg [BCD_WIDTH-1:0] bcd  // 参数化位宽的BCD输出
+// );
+//     integer i, j;
+//     always @(binary) begin
+//         bcd = {BCD_WIDTH{1'b0}};  // 初始化BCD输出为0
+
+//         // 移位和加3算法
+//         for (i = BINARY_WIDTH - 1; i >= 0; i = i - 1) begin
+//             // 检查每个BCD位是否大于等于5
+//             for (j = 0; j < (BCD_WIDTH >> 2); j = j + 1) begin
+//                 if (bcd[(j<<2)+:4] >= 5) begin
+//                     bcd[(j<<2)+:4] = bcd[(j<<2)+:4] + 3;
+//                 end
+//             end
+//             // 左移一位并添加当前二进制位
+//             bcd = {bcd[BCD_WIDTH-2:0], binary[i]};
+//         end
+//     end
+// endmodule

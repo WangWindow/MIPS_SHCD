@@ -12,8 +12,9 @@ module CLK_DIV #(
     parameter DIV = 8  // 分频系数
 ) (
     input clk,  // 时钟信号
-    input  reset_n,  // 复位信号
-    output reg clk_div     // 时钟信号
+    input reset_n,  // 复位信号
+
+    output reg clk_div  // 时钟信号
 );
     reg [31:0] cnt;  // 计数器
 

@@ -3,28 +3,29 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-12-26 20:33:00
  * @LastEditors: WangWindow
- * @LastEditTime: 2024-12-30 20:10:33
+ * @LastEditTime: 2024-12-31 22:15:37
  * 2024 by WangWindow, All Rights Reserved.
- * @Descripttion: CU
+ * @Descripttion: 控制单元 CU
  */
 
 `include "defines.v"
 
 // 控制单元
 module CU (
-    input            clk,
-    input            reset_n,
-    input      [5:0] OPcode,
-    input      [5:0] Func,
-    output reg       RegDst,
-    output reg       ALUSrc_B,
-    output reg       MemtoReg,
-    output reg       Jump,
-    output reg       Branch,
-    output reg       RegWrite,
-    output reg [4:0] ALU_Control,
-    output reg       MemRead,
-    output reg       MemWrite
+    input       clk,      // 时钟信号
+    input       reset_n,  // 复位信号
+    input [5:0] OPcode,   // 操作码
+    input [5:0] Func,     // 功能码
+
+    output reg [4:0] ALU_Control,  // ALU 控制信号
+    output reg       ALUSrc_B,     // ALU 第二个操作数选择信号
+    output reg       RegDst,       // 目的寄存器选择信号
+    output reg       MemWrite,     // 内存写使能信号
+    output reg       MemRead,      // 内存读使能信号
+    output reg       Branch,       // 分支信号
+    output reg       Jump,         // 跳转信号
+    output reg       MemtoReg,     // 写寄存器数据来源选择信号
+    output reg       RegWrite      // 寄存器写使能信号
 );
     wire RFormat;  // R 型指令：操作数都是寄存器的算数指令
     wire IFormat_L;  // I 型指令：加载
@@ -51,9 +52,11 @@ module CU (
 
     // ALU 控制
     ALU_Ctrl u_ALU_Ctrl (
-        .ALU_op     (ALU_op),
-        .OPcode     (OPcode),
-        .Func       (Func),
+        // input
+        .ALU_op(ALU_op),
+        .OPcode(OPcode),
+        .Func(Func),
+        // output
         .ALU_Control(ALU_Control_t)
     );
 
@@ -66,8 +69,8 @@ module CU (
             Jump        <= 0;
             Branch      <= 0;
             RegWrite    <= 0;
-            MemRead     <= 0;
             MemWrite    <= 0;
+            MemRead     <= 0;
             ALU_Control <= 0;
         end else begin
             RegDst      <= RFormat;
@@ -76,8 +79,8 @@ module CU (
             Jump        <= JFormat;
             Branch      <= IFormat_B;
             RegWrite    <= RFormat | IFormat_L | IFormat_A;
-            MemRead     <= IFormat_L;
             MemWrite    <= IFormat_S;
+            MemRead     <= IFormat_L;
             ALU_Control <= ALU_Control_t;
         end
     end
@@ -85,10 +88,11 @@ endmodule
 
 // ALU 控制模块
 module ALU_Ctrl (
-    input [2:0] ALU_op,
-    input [5:0] OPcode,
-    input [5:0] Func,
-    output reg [4:0] ALU_Control
+    input [2:0] ALU_op,  // ALU 操作类型
+    input [5:0] OPcode,  // 操作码
+    input [5:0] Func,    // 功能码
+
+    output reg [4:0] ALU_Control  // ALU 控制信号
 );
     // ALUOp=100: RFormat    --> 算术逻辑运算
     // ALUOp=010: IFormat_A  --> 算术逻辑运算

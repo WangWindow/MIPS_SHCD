@@ -1,2 +1,2 @@
 
-java -jar "./Gen/Mars45.jar"
+java -jar "./gen/Mars45.jar"

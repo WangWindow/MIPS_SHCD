@@ -3,26 +3,27 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-07 23:37:57
  * @LastEditors: WangWindow
- * @LastEditTime: 2024-12-30 22:21:50
+ * @LastEditTime: 2024-12-31 22:13:19
  * 2024 by WangWindow, All Rights Reserved.
- * @Descripttion: ALU
+ * @Descripttion: 算术逻辑单元 ALU
  */
 
 `include "defines.v"
 
 // 算术逻辑单元
 module ALU (
-    input             clk,
-    input             reset_n,
-    input      [31:0] A,
-    input      [31:0] B,
-    input      [ 4:0] ALU_Control,
-    output reg [31:0] ALU_Result,
-    output reg [31:0] Hi,
-    output reg [31:0] Lo,
-    output            Zero,
-    output            Over,
-    output            Signed
+    input        clk,         // 时钟信号
+    input        reset_n,     // 复位信号
+    input [31:0] A,           // 输入数据 1
+    input [31:0] B,           // 输入数据 2
+    input [ 4:0] ALU_Control, // ALU 控制信号
+
+    output reg [31:0] ALU_Result,  // 输出结果
+    output reg [31:0] Hi,          // 输出高 32 位
+    output reg [31:0] Lo,          // 输出低 32 位
+    output            Zero,        // 零标志
+    output            Over,        // 溢出标志
+    output            Signed       // 符号标志
 );
     reg signed_flag;
 

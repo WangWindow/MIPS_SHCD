@@ -1,7 +1,0 @@
-verilog xil_defaultlib --include "../../../../MyCPU.gen/sources_1/ip/MyVIO/hdl/verilog" --include "../../../../MyCPU.gen/sources_1/ip/MyVIO/hdl" \
-"../../../../MyCPU.gen/sources_1/ip/MyVIO/sim/MyVIO.v" \
-
-verilog xil_defaultlib "glbl.v"
-
-# Do not sort compile order
-nosort

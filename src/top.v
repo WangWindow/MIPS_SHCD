@@ -11,66 +11,55 @@
 `include "defines.v"
 
 module top (
-    input  sys_clk,  // 时钟信号
-    input  reset_n,  // 复位信号
-    output sh_cp,
-    output st_cp,
-    output ds
-);
-    reg CPU_en;
-    wire [31:0] result;  // CPU计算结果
-    wire [31:0] display_data;  // 用于显示的BCD码
-    wire [7:0] sel;  // 数码管位选（选择当前要显示的数码管）
-    wire [6:0] seg;  // 数码管段选（当前要显示的内容）
+    input sys_clk,  // 时钟信号
+    input reset_n,  // 复位信号
 
-    // CPU 时钟模块实例化
-    wire clk;
+    output sh_cp,  // 移位寄存器时钟
+    output st_cp,  // 移位寄存器存储
+    output ds  //串行数据
+);
+    reg CPU_en;  // CPU 使能信号
+    reg Show_en;  // 数码管显示使能信号
+    wire [31:0] result;  // CPU计算结果
+    wire cpu_clk;  // CPU时钟
+
+    // 时钟分频模块实例化
     CLK_DIV #(
         .DIV(`CPU_CLK_DIV)
     ) u_CLK_DIV (
+        // input
         .clk    (sys_clk),
         .reset_n(reset_n),
-        .clk_div(clk)
+        // output
+        .clk_div(cpu_clk)
     );
 
     // CPU 实例化
     CPU u_CPU (
+        // input
         .en     (CPU_en),
-        .clk    (clk),
+        .clk    (cpu_clk),
         .reset_n(reset_n),
+        // output
         .result (result)
     );
 
-    // 结果转换为 BCD 码
-    // BinaryToBCD #(
-    //     .BINARY_WIDTH(32),
-    //     .BCD_WIDTH(32)
-    // ) u_BinaryToBCD (
-    //     .binary(result),
-    //     .bcd   (display_data)
-    // );
-
     // 控制 8 个数码管动态显示的模块实例化
-    Show8 u_Show8 (
-        .clk(sys_clk),
+    Show u_Show (
+        // input
+        .en     (Show_en),
+        .clk    (sys_clk),
         .reset_n(reset_n),
-        .en(1'b1),
-        .display_data(result),
-        .sel(sel),
-        .seg(seg)
-    );
-    HC595_Driver u_HC595_Driver (
-        .clk(sys_clk),
-        .reset_n(reset_n),
-        .data({1'd1, seg, sel}),
-        .s_en(1'b1),
-        .sh_cp(sh_cp),
-        .st_cp(st_cp),
-        .ds(ds)
+        .data   (result),
+        // output
+        .sh_cp  (sh_cp),
+        .st_cp  (st_cp),
+        .ds     (ds)
     );
 
     initial begin
-        CPU_en = 1'b1;
+        CPU_en  = 1'b1;
+        Show_en = 1'b1;
     end
 
 endmodule

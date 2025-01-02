@@ -1,2 +1,0 @@
-MyRam.v,verilog,xil_defaultlib,../../../../MyCPU.gen/sources_1/ip/MyRam/sim/MyRam.v,
-glbl.v,Verilog,xil_defaultlib,glbl.v
