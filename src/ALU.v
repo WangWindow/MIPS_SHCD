@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-07 23:37:57
  * @LastEditors: WangWindow
- * @LastEditTime: 2024-12-31 22:13:19
+ * @LastEditTime: 2025-01-03 14:06:22
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: 算术逻辑单元 ALU
  */
@@ -12,7 +12,7 @@
 
 // 算术逻辑单元
 module ALU (
-    input        clk,         // 时钟信号
+    // input        clk,         // 时钟信号
     input        reset_n,     // 复位信号
     input [31:0] A,           // 输入数据 1
     input [31:0] B,           // 输入数据 2
@@ -27,7 +27,8 @@ module ALU (
 );
     reg signed_flag;
 
-    always @(posedge clk or negedge reset_n) begin
+    // always @(posedge clk or negedge reset_n) begin
+    always @(*) begin
         if (!reset_n) begin
             ALU_Result  <= 32'b0;
             Hi          <= 32'b0;

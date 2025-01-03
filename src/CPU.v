@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 10:05:04
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-01-02 21:53:56
+ * @LastEditTime: 2025-01-03 14:48:24
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: CPU
  */
@@ -239,7 +239,7 @@ module CPU (
 
     //! 输出结果
     always @(posedge clk) begin
-        result <= wb_Regs_wdata;
+        result <= id_Regs_wdata;
     end
 
     // TODO: IF/ID 流水线寄存器
@@ -346,17 +346,23 @@ module CPU (
     );
 
     // TODO: Instruction Memory 模块实例化
-    ROM u_Instruction_Memory (
-        // input
-        .raddr(PC),
-        // output
-        .rdata(if_Instruction)
+    // ROM u_Instruction_Memory (
+    //     // input
+    //     .raddr(PC),
+    //     // output
+    //     .rdata(if_Instruction)
+    // );
+    MyROM u_Instruction_Memory (
+        .clka(clk),  // input wire clka
+        .ena(en),  // input wire ena
+        .addra(PC >> 2),  // input wire [7 : 0] addra
+        .douta(if_Instruction)  // output wire [31 : 0] douta
     );
 
     // TODO: 控制单元模块实例化
     CU u_CU (
         // input
-        .clk        (clk),
+        // .clk        (clk),
         .reset_n    (reset_n),
         .OPcode     (id_OPcode),
         .Func       (id_Func),
@@ -375,7 +381,7 @@ module CPU (
     // TODO: 寄存器堆模块(32个通用寄存器)实例化
     General_Regs u_General_Regs (
         // input
-        .clk    (clk),
+        // .clk    (clk),
         .reset_n(reset_n),
         .re     (en),
         .we     (id_RegWrite_back),
@@ -391,7 +397,7 @@ module CPU (
     // TODO: ALU 模块实例化
     ALU u_ALU (
         // input
-        .clk        (clk),
+        // .clk        (clk),
         .reset_n    (reset_n),
         .A          (ex_ALU_in1),
         .B          (ex_ALU_in2),

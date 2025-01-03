@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-11-02 00:22:38
  * @LastEditors: WangWindow
- * @LastEditTime: 2024-12-29 16:09:36
+ * @LastEditTime: 2025-01-03 14:32:27
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: 顶层文件
  */
@@ -11,19 +11,21 @@
 `include "defines.v"
 
 module top (
-    input sys_clk,  // 时钟信号
-    input reset_n,  // 复位信号
-
-    output sh_cp,  // 移位寄存器时钟
-    output st_cp,  // 移位寄存器存储
-    output ds  //串行数据
+    input  sys_clk,  // 时钟信号
+    input  reset_n,  // 复位信号
+    output sh_cp,
+    output st_cp,
+    output ds
 );
-    reg CPU_en;  // CPU 使能信号
-    reg Show_en;  // 数码管显示使能信号
+    reg CPU_en;
+    reg Show_en;
     wire [31:0] result;  // CPU计算结果
-    wire cpu_clk;  // CPU时钟
+    wire [31:0] display_data;  // 用于显示的BCD码
+    wire [7:0] sel;  // 数码管位选（选择当前要显示的数码管）
+    wire [6:0] seg;  // 数码管段选（当前要显示的内容）
 
-    // 时钟分频模块实例化
+    // CPU 时钟模块实例化
+    wire clk;
     CLK_DIV #(
         .DIV(`CPU_CLK_DIV)
     ) u_CLK_DIV (
@@ -31,30 +33,40 @@ module top (
         .clk    (sys_clk),
         .reset_n(reset_n),
         // output
-        .clk_div(cpu_clk)
+        .clk_div(clk)
     );
 
     // CPU 实例化
     CPU u_CPU (
         // input
         .en     (CPU_en),
-        .clk    (cpu_clk),
+        .clk    (clk),
         .reset_n(reset_n),
         // output
         .result (result)
     );
 
-    // 控制 8 个数码管动态显示的模块实例化
-    Show u_Show (
+    // 数码管显示模块实例化
+    Show_Gen u_Show_Gen (
         // input
-        .en     (Show_en),
-        .clk    (sys_clk),
+        .clk(sys_clk),
         .reset_n(reset_n),
-        .data   (result),
+        .en(Show_en),
+        .data(result),
         // output
-        .sh_cp  (sh_cp),
-        .st_cp  (st_cp),
-        .ds     (ds)
+        .sel(sel),
+        .seg(seg)
+    );
+    HC595_Driver u_HC595_Driver (
+        // input
+        .clk(sys_clk),
+        .reset_n(reset_n),
+        .data({1'd1, seg, sel}),
+        .s_en(Show_en),
+        // output
+        .sh_cp(sh_cp),
+        .st_cp(st_cp),
+        .ds(ds)
     );
 
     initial begin

@@ -3,14 +3,14 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-12-30 20:27:19
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-01-02 21:43:02
+ * @LastEditTime: 2025-01-03 14:04:32
  * 2025 by WangWindow, All Rights Reserved.
  * @Descripttion: 寄存器
  */
 
 // 32 位寄存器堆
 module General_Regs (
-    input        clk,      // 时钟信号，上述沿写入数据
+    // input        clk,      // 时钟信号，上述沿写入数据
     input        reset_n,  // 复位信号
     input        re,       // 读使能
     input        we,       // 写使能
@@ -26,7 +26,8 @@ module General_Regs (
 
     // 读写操作
     integer i;
-    always @(posedge clk or negedge reset_n) begin
+    // always @(posedge clk or negedge reset_n) begin
+    always @(*) begin
         if (!reset_n) begin
             for (i = 0; i < 32; i = i + 1) begin
                 Regs[i] <= 32'h00000000;

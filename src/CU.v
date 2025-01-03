@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-12-26 20:33:00
  * @LastEditors: WangWindow
- * @LastEditTime: 2024-12-31 22:15:37
+ * @LastEditTime: 2025-01-03 14:03:36
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: 控制单元 CU
  */
@@ -12,7 +12,7 @@
 
 // 控制单元
 module CU (
-    input       clk,      // 时钟信号
+    // input       clk,      // 时钟信号
     input       reset_n,  // 复位信号
     input [5:0] OPcode,   // 操作码
     input [5:0] Func,     // 功能码
@@ -61,27 +61,27 @@ module CU (
     );
 
     // 控制信号输出
-    always @(posedge clk or negedge reset_n) begin
+    always @(*) begin
         if (!reset_n) begin
-            RegDst      <= 0;
+            ALU_Control <= 0;
             ALUSrc_B    <= 0;
-            MemtoReg    <= 0;
-            Jump        <= 0;
-            Branch      <= 0;
-            RegWrite    <= 0;
+            RegDst      <= 0;
             MemWrite    <= 0;
             MemRead     <= 0;
-            ALU_Control <= 0;
+            Branch      <= 0;
+            Jump        <= 0;
+            MemtoReg    <= 0;
+            RegWrite    <= 0;
         end else begin
-            RegDst      <= RFormat;
+            ALU_Control <= ALU_Control_t;
             ALUSrc_B    <= IFormat_L | IFormat_S | IFormat_A;
-            MemtoReg    <= IFormat_L;
-            Jump        <= JFormat;
-            Branch      <= IFormat_B;
-            RegWrite    <= RFormat | IFormat_L | IFormat_A;
+            RegDst      <= RFormat;
             MemWrite    <= IFormat_S;
             MemRead     <= IFormat_L;
-            ALU_Control <= ALU_Control_t;
+            Branch      <= IFormat_B;
+            Jump        <= JFormat;
+            MemtoReg    <= IFormat_L;
+            RegWrite    <= RFormat | IFormat_L | IFormat_A;
         end
     end
 endmodule

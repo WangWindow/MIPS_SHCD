@@ -8,46 +8,6 @@
  * @Descripttion: 其他模块
  */
 
-// 控制 8 个数码管显示(使用BX71开发板)
-module Show (
-    input en,  //数码管显示使能
-    input clk,  //50M
-    input reset_n,  //复位信号,低有效
-    input [31:0] data,  // 8个BCD码
-
-    output sh_cp,  //移位寄存器时钟
-    output st_cp,  //存储寄存器时钟
-    output ds  //串行数据输入
-);
-    wire [7:0] sel;  // 数码管位选（选择当前要显示的数码管）
-    wire [6:0] seg;  // 数码管段选（当前要显示的内容）
-
-    // 数码管段选和位选模块实例化
-    Show_Gen u_Show_Gen (
-        // input
-        .clk(sys_clk),
-        .reset_n(reset_n),
-        .en(en),
-        .data(data),
-        // output
-        .sel(sel),
-        .seg(seg)
-    );
-    // 74HC595驱动模块实例化
-    HC595_Driver u_HC595_Driver (
-        // input
-        .clk(sys_clk),
-        .reset_n(reset_n),
-        .data({1'd1, seg, sel}),
-        .s_en(en),
-        // output
-        .sh_cp(sh_cp),
-        .st_cp(st_cp),
-        .ds(ds)
-    );
-endmodule
-
-
 // 数码管段选和位选的模块
 module Show_Gen (
     input en,  //数码管显示使能
