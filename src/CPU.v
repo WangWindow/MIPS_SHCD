@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 10:05:04
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-01-07 11:31:36
+ * @LastEditTime: 2025-01-07 15:25:08
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: CPU
  */
@@ -99,12 +99,15 @@ module CPU (
     wire [31:0] ex_immediate;
     wire [31:0] ex_Data1;
     wire [31:0] ex_Data2;
+    wire [ 4:0] ex_rs_addr;
     wire [ 4:0] ex_rt_addr;
     wire [ 4:0] ex_rd_addr;
     wire [31:0] ex_Branch_addr;
     wire [ 4:0] ex_Regs_waddr_select;
 
     // 执行阶段 ALU 输入输出信号
+    wire [31:0] ex_forwardA_in;
+    wire [31:0] ex_forwardB_in;
     wire [31:0] ex_ALU_in1;
     wire [31:0] ex_ALU_in2;
     wire [31:0] ex_ALU_Result;
@@ -163,6 +166,10 @@ module CPU (
     wire        IF_ID_Write;
     wire        ControlFlush;
 
+    // 转发单元输出信号
+    wire [ 1:0] ForwardA;
+    wire [ 1:0] ForwardB;
+
     // TODO: 数据通路
     // $$取指阶段
     assign if_Zero_Branch = mem_Zero_Branch;
@@ -202,9 +209,14 @@ module CPU (
     assign ex_immediate = ID_EX_IM;
     assign ex_Data1 = ID_EX_DATA1;
     assign ex_Data2 = ID_EX_DATA2;
-    assign ex_ALU_in1 = ex_Data1;
-    assign ex_ALU_in2 = (ex_ALUSrc_B) ? ex_immediate : ex_Data2;
+    assign ex_forwardA_in = (ForwardA == 2'b10) ? mem_DataMemory_addr : (ForwardA == 2'b01) ? wb_Regs_wdata : ex_Data1;
+    assign ex_forwardB_in = (ForwardB == 2'b10) ? mem_DataMemory_addr : (ForwardB == 2'b01) ? wb_Regs_wdata : ex_Data2;
+    assign ex_ALU_in1 = ex_forwardA_in;
+    assign ex_ALU_in2 = (ex_ALUSrc_B) ? ex_immediate : ex_forwardB_in;
+    // assign ex_ALU_in1 = ex_Data1;
+    // assign ex_ALU_in2 = (ex_ALUSrc_B) ? ex_immediate : ex_Data2;
     assign ex_ALU_Result_t = (ex_ALU_Control == `MFHI) ? Hi : (ex_ALU_Control == `MFLO) ? Lo : ex_ALU_Result;
+    assign ex_rs_addr = ID_EX_RS_ADDR;
     assign ex_rt_addr = ID_EX_RT_ADDR;
     assign ex_rd_addr = ID_EX_RD_ADDR;
     assign ex_Branch_addr = {ID_EX_IM[29:0], 2'b0} + ID_EX_PC;
@@ -293,6 +305,7 @@ module CPU (
         .rdata1(id_Regs_rdata1),
         .rdata2(id_Regs_rdata2),
         .immediate(id_Immediate),
+        .rs_addr(id_rs_addr),
         .rt_addr(id_rt_addr),
         .rd_addr(id_rd_addr),
         // output
@@ -309,6 +322,7 @@ module CPU (
         .ID_EX_DATA1(ID_EX_DATA1),
         .ID_EX_DATA2(ID_EX_DATA2),
         .ID_EX_IM(ID_EX_IM),
+        .ID_EX_RS_ADDR(ID_EX_RS_ADDR),
         .ID_EX_RT_ADDR(ID_EX_RT_ADDR),
         .ID_EX_RD_ADDR(ID_EX_RD_ADDR)
     );
@@ -438,12 +452,24 @@ module CPU (
     // TODO: Hazard Detection Unit 模块实例化
     Hazard_Detection_Unit u_Hazard_Detection_Unit (
         .ID_EX_MemRead(ID_EX_MemRead),
-        .ID_EX_RegisterRt(ID_EX_RT_ADDR),
-        .IF_ID_RegisterRs(IF_ID_IR[25:21]),
-        .IF_ID_RegisterRt(IF_ID_IR[20:16]),
+        .ID_EX_RegisterRt(ex_rt_addr),
+        .IF_ID_RegisterRs(id_rs_addr),
+        .IF_ID_RegisterRt(id_rt_addr),
         .PCWrite(PCWrite),
         .IF_ID_Write(IF_ID_Write),
         .ControlFlush(ControlFlush)
+    );
+
+    // TODO: Forwarding Unit 模块实例化
+    Forwarding_Unit u_Forwarding_Unit (
+        .EX_MEM_RegWrite(mem_RegWrite),
+        .EX_MEM_RegisterRd(EX_MEM_REG_WADDR),
+        .MEM_WB_RegWrite(wb_RegWrite),
+        .MEM_WB_RegisterRd(MEM_WB_REG_WADDR),
+        .ID_EX_RegisterRs(ex_rs_addr),
+        .ID_EX_RegisterRt(ex_rt_addr),
+        .ForwardA(ForwardA),
+        .ForwardB(ForwardB)
     );
 
     // TODO: 初始化和复位
@@ -452,7 +478,6 @@ module CPU (
         PC <= 32'b0;
     end
 endmodule
-
 
 // 冲突检测单元
 module Hazard_Detection_Unit (
@@ -469,4 +494,28 @@ module Hazard_Detection_Unit (
     assign PCWrite      = ~hazard;
     assign IF_ID_Write  = ~hazard;
     assign ControlFlush = hazard;
+endmodule
+
+//
+module Forwarding_Unit (
+    input            EX_MEM_RegWrite,
+    input      [4:0] EX_MEM_RegisterRd,
+    input            MEM_WB_RegWrite,
+    input      [4:0] MEM_WB_RegisterRd,
+    input      [4:0] ID_EX_RegisterRs,
+    input      [4:0] ID_EX_RegisterRt,
+    output reg [1:0] ForwardA,
+    output reg [1:0] ForwardB
+);
+    always @(*) begin
+        // 默认不转发
+        ForwardA = 2'b00;
+        ForwardB = 2'b00;
+        // EX阶段的转发检测
+        if (EX_MEM_RegWrite && (EX_MEM_RegisterRd != 5'b0) && (EX_MEM_RegisterRd == ID_EX_RegisterRs)) ForwardA = 2'b10;
+        if (EX_MEM_RegWrite && (EX_MEM_RegisterRd != 5'b0) && (EX_MEM_RegisterRd == ID_EX_RegisterRt)) ForwardB = 2'b10;
+        // MEM阶段的转发检测
+        if (MEM_WB_RegWrite && (MEM_WB_RegisterRd != 5'b0) && (MEM_WB_RegisterRd == ID_EX_RegisterRs)) ForwardA = 2'b01;
+        if (MEM_WB_RegWrite && (MEM_WB_RegisterRd != 5'b0) && (MEM_WB_RegisterRd == ID_EX_RegisterRt)) ForwardB = 2'b01;
+    end
 endmodule

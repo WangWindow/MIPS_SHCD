@@ -89,6 +89,7 @@ module ID_EX_Regs (
     input wire [31:0] rdata1,
     input wire [31:0] rdata2,
     input wire [31:0] immediate,
+    input wire [4:0] rs_addr,
     input wire [4:0] rt_addr,
     input wire [4:0] rd_addr,
 
@@ -105,6 +106,7 @@ module ID_EX_Regs (
     output reg [31:0] ID_EX_DATA1,
     output reg [31:0] ID_EX_DATA2,
     output reg [31:0] ID_EX_IM,
+    output reg [4:0] ID_EX_RS_ADDR,
     output reg [4:0] ID_EX_RT_ADDR,
     output reg [4:0] ID_EX_RD_ADDR
 );
@@ -123,6 +125,7 @@ module ID_EX_Regs (
             ID_EX_DATA1 <= 32'b0;
             ID_EX_DATA2 <= 32'b0;
             ID_EX_IM <= 32'b0;
+            ID_EX_RS_ADDR <= 5'b0;
             ID_EX_RT_ADDR <= 5'b0;
             ID_EX_RD_ADDR <= 5'b0;
         end else if (en) begin
@@ -151,6 +154,7 @@ module ID_EX_Regs (
             ID_EX_DATA1 <= rdata1;
             ID_EX_DATA2 <= rdata2;
             ID_EX_IM <= immediate;
+            ID_EX_RS_ADDR <= rs_addr;
             ID_EX_RT_ADDR <= rt_addr;
             ID_EX_RD_ADDR <= rd_addr;
         end
