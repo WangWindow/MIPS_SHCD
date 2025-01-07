@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-12-30 20:27:19
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-01-03 14:04:32
+ * @LastEditTime: 2025-01-07 11:20:26
  * 2025 by WangWindow, All Rights Reserved.
  * @Descripttion: 寄存器
  */
@@ -52,6 +52,7 @@ module IF_ID_Regs (
     input wire clk,
     input wire reset_n,
     input wire en,
+    input wire we,
     input wire [31:0] IR,
     input wire [31:0] PC,
 
@@ -74,6 +75,7 @@ module ID_EX_Regs (
     input wire clk,
     input wire reset_n,
     input wire en,
+    input wire ControlFlush,
     input wire [4:0] ALU_Control,
     input wire ALUSrc_B,
     input wire RegDst,
@@ -124,15 +126,27 @@ module ID_EX_Regs (
             ID_EX_RT_ADDR <= 5'b0;
             ID_EX_RD_ADDR <= 5'b0;
         end else if (en) begin
-            ID_EX_ALU_Control <= ALU_Control;
-            ID_EX_ALUSrc_B <= ALUSrc_B;
-            ID_EX_RegDst <= RegDst;
-            ID_EX_MemWrite <= MemWrite;
-            ID_EX_MemRead <= MemRead;
-            ID_EX_Branch <= Branch;
-            ID_EX_Jump <= Jump;
-            ID_EX_MemtoReg <= MemtoReg;
-            ID_EX_RegWrite <= RegWrite;
+            if (ControlFlush) begin
+                ID_EX_ALU_Control <= 5'b0;
+                ID_EX_ALUSrc_B <= 1'b0;
+                ID_EX_RegDst <= 1'b0;
+                ID_EX_MemWrite <= 1'b0;
+                ID_EX_MemRead <= 1'b0;
+                ID_EX_Branch <= 1'b0;
+                ID_EX_Jump <= 1'b0;
+                ID_EX_MemtoReg <= 1'b0;
+                ID_EX_RegWrite <= 1'b0;
+            end else begin
+                ID_EX_ALU_Control <= ALU_Control;
+                ID_EX_ALUSrc_B <= ALUSrc_B;
+                ID_EX_RegDst <= RegDst;
+                ID_EX_MemWrite <= MemWrite;
+                ID_EX_MemRead <= MemRead;
+                ID_EX_Branch <= Branch;
+                ID_EX_Jump <= Jump;
+                ID_EX_MemtoReg <= MemtoReg;
+                ID_EX_RegWrite <= RegWrite;
+            end
             ID_EX_PC <= id_PC;
             ID_EX_DATA1 <= rdata1;
             ID_EX_DATA2 <= rdata2;

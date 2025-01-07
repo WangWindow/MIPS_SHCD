@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 10:05:04
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-01-03 14:48:24
+ * @LastEditTime: 2025-01-07 11:31:36
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: CPU
  */
@@ -19,17 +19,20 @@ module CPU (
     output reg [31:0] result  // 输出结果
 );
     // TODO: CPU 内部信号
+    // 其他信号
+    reg  [31:0] Hi;  // Hi 寄存器
+    reg  [31:0] Lo;  // Lo 寄存器
+
     // $$ 取指阶段
     reg  [31:0] PC;  // 程序计数器中的数据
-    reg  [31:0] IR;  // 指令寄存器中的数据
-    wire [31:0] if_Instruction;
+    wire [31:0] IR;  // 指令寄存器中的数据
     wire        if_Zero_Branch;
     wire        if_Jump;
     wire [31:0] if_Branch_addr;
     wire [31:0] if_PC_Add_4;
     wire [31:0] if_Jump_addr;
-    wire [31:0] if_Next_PC_t;
-    wire [31:0] if_Next_PC;
+    wire [31:0] Next_PC_t;
+    wire [31:0] Next_PC;
 
     // $$ 取指/译码阶段的寄存器
     wire [31:0] IF_ID_IR;
@@ -100,10 +103,12 @@ module CPU (
     wire [ 4:0] ex_rd_addr;
     wire [31:0] ex_Branch_addr;
     wire [ 4:0] ex_Regs_waddr_select;
+
     // 执行阶段 ALU 输入输出信号
     wire [31:0] ex_ALU_in1;
     wire [31:0] ex_ALU_in2;
     wire [31:0] ex_ALU_Result;
+    wire [31:0] ex_ALU_Result_t;
     wire [31:0] ex_ALU_Hi;
     wire [31:0] ex_ALU_Lo;
     wire        ex_ALU_zero;
@@ -153,6 +158,11 @@ module CPU (
     wire        wb_RegWrite;
     wire        wb_MemtoReg;
 
+    // 冲突检测单元输出信号
+    wire        PCWrite;
+    wire        IF_ID_Write;
+    wire        ControlFlush;
+
     // TODO: 数据通路
     // $$取指阶段
     assign if_Zero_Branch = mem_Zero_Branch;
@@ -160,8 +170,8 @@ module CPU (
     assign if_Branch_addr = mem_PC;
     assign if_PC_Add_4 = PC + 4;
     assign if_Jump_addr = id_Jump_addr;
-    assign if_Next_PC_t = (if_Zero_Branch) ? mem_PC : if_PC_Add_4;
-    assign if_Next_PC = (if_Jump) ? if_Jump_addr : if_Next_PC_t;
+    assign Next_PC_t = (if_Zero_Branch) ? mem_PC : if_PC_Add_4;
+    assign Next_PC = (if_Jump) ? if_Jump_addr : Next_PC_t;
 
     // $$译码阶段
     assign id_OPcode = IF_ID_IR[31:26];
@@ -194,6 +204,7 @@ module CPU (
     assign ex_Data2 = ID_EX_DATA2;
     assign ex_ALU_in1 = ex_Data1;
     assign ex_ALU_in2 = (ex_ALUSrc_B) ? ex_immediate : ex_Data2;
+    assign ex_ALU_Result_t = (ex_ALU_Control == `MFHI) ? Hi : (ex_ALU_Control == `MFLO) ? Lo : ex_ALU_Result;
     assign ex_rt_addr = ID_EX_RT_ADDR;
     assign ex_rd_addr = ID_EX_RD_ADDR;
     assign ex_Branch_addr = {ID_EX_IM[29:0], 2'b0} + ID_EX_PC;
@@ -220,20 +231,26 @@ module CPU (
     assign wb_RegWrite = MEM_WB_RegWrite;
     assign wb_MemtoReg = MEM_WB_MemtoReg;
 
-    // 其他信号
-    reg [31:0] Hi;  // Hi 寄存器
-    reg [31:0] Lo;  // Lo 寄存器
-    always @(*) begin
-        IR <= if_Instruction;
-        Hi <= ex_ALU_Hi;
-        Lo <= ex_ALU_Lo;
+    // PC 更新逻辑
+    always @(posedge clk or negedge reset_n) begin
+        if (!reset_n) begin
+            PC <= 32'b0;
+        end else if (PCWrite) begin
+            PC <= Next_PC;
+        end
     end
 
     always @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin
-            PC <= 32'b0;
+            Hi <= 32'b0;
+            Lo <= 32'b0;
         end else begin
-            PC <= if_Next_PC;
+            case (ex_ALU_Control)
+                `MUL, `MULU, `DIV, `DIVU: begin
+                    Hi <= ex_ALU_Hi;
+                    Lo <= ex_ALU_Lo;
+                end
+            endcase
         end
     end
 
@@ -248,7 +265,8 @@ module CPU (
         .clk(clk),
         .reset_n(reset_n),
         .en(en),
-        .IR(if_Instruction),
+        .we(IF_ID_Write),
+        .IR(IR),
         .PC(if_PC_Add_4),
         // output
         .IF_ID_IR(IF_ID_IR),
@@ -261,6 +279,7 @@ module CPU (
         .clk(clk),
         .reset_n(reset_n),
         .en(en),
+        .ControlFlush(ControlFlush),
         .ALU_Control(id_ALU_Control),
         .ALUSrc_B(id_ALUSrc_B),
         .RegDst(id_RegDst),
@@ -307,7 +326,7 @@ module CPU (
         .MemtoReg(ex_MemtoReg),
         .RegWrite(ex_RegWrite),
         .Branch_addr(ex_Branch_addr),
-        .ALU_Result(ex_ALU_Result),
+        .ALU_Result(ex_ALU_Result_t),
         .ALU_Sign({ex_ALU_zero, ex_ALU_over, ex_ALU_signed}),
         .DATA2(ex_Data2),
         .Regs_waddr_select(ex_Regs_waddr_select),
@@ -346,17 +365,11 @@ module CPU (
     );
 
     // TODO: Instruction Memory 模块实例化
-    // ROM u_Instruction_Memory (
-    //     // input
-    //     .raddr(PC),
-    //     // output
-    //     .rdata(if_Instruction)
-    // );
     MyROM u_Instruction_Memory (
         .clka(clk),  // input wire clka
         .ena(en),  // input wire ena
         .addra(PC >> 2),  // input wire [7 : 0] addra
-        .douta(if_Instruction)  // output wire [31 : 0] douta
+        .douta(IR)  // output wire [31 : 0] douta
     );
 
     // TODO: 控制单元模块实例化
@@ -422,9 +435,38 @@ module CPU (
         .rdata(mem_DataMemory_rdata)
     );
 
+    // TODO: Hazard Detection Unit 模块实例化
+    Hazard_Detection_Unit u_Hazard_Detection_Unit (
+        .ID_EX_MemRead(ID_EX_MemRead),
+        .ID_EX_RegisterRt(ID_EX_RT_ADDR),
+        .IF_ID_RegisterRs(IF_ID_IR[25:21]),
+        .IF_ID_RegisterRt(IF_ID_IR[20:16]),
+        .PCWrite(PCWrite),
+        .IF_ID_Write(IF_ID_Write),
+        .ControlFlush(ControlFlush)
+    );
+
     // TODO: 初始化和复位
     initial begin
         $display("CPU start");
         PC <= 32'b0;
     end
+endmodule
+
+
+// 冲突检测单元
+module Hazard_Detection_Unit (
+    input        ID_EX_MemRead,
+    input  [4:0] ID_EX_RegisterRt,
+    input  [4:0] IF_ID_RegisterRs,
+    input  [4:0] IF_ID_RegisterRt,
+    output       PCWrite,
+    output       IF_ID_Write,
+    output       ControlFlush
+);
+
+    wire hazard = ID_EX_MemRead & ((ID_EX_RegisterRt == IF_ID_RegisterRs) | (ID_EX_RegisterRt == IF_ID_RegisterRt));
+    assign PCWrite      = ~hazard;
+    assign IF_ID_Write  = ~hazard;
+    assign ControlFlush = hazard;
 endmodule
