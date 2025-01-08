@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-11-02 00:22:38
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-01-03 14:32:27
+ * @LastEditTime: 2025-01-07 18:34:00
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: 顶层文件
  */
@@ -46,13 +46,21 @@ module top (
         .result (result)
     );
 
+    // 转换模块实例化
+    BinaryToBCD u_BinaryToBCD (
+        // input
+        .binary(result),
+        // output
+        .bcd(display_data)
+    );
+
     // 数码管显示模块实例化
     Show_Gen u_Show_Gen (
         // input
         .clk(sys_clk),
         .reset_n(reset_n),
         .en(Show_en),
-        .data(result),
+        .data(display_data),
         // output
         .sel(sel),
         .seg(seg)

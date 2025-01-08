@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2024-10-08 01:47:14
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-01-01 15:25:11
+ * @LastEditTime: 2025-01-07 18:34:15
  * 2024 by WangWindow, All Rights Reserved.
  * @Descripttion: 其他模块
  */
@@ -254,28 +254,28 @@ module HC595_Driver (
 endmodule
 
 // 二进制转 BCD 码
-// module BinaryToBCD #(
-//     parameter BINARY_WIDTH = 32,
-//     parameter BCD_WIDTH = 32
-// ) (
-//     input [BINARY_WIDTH-1:0] binary,  // 参数化位宽的二进制输入
+module BinaryToBCD #(
+    parameter BINARY_WIDTH = 32,
+    parameter BCD_WIDTH = 32
+) (
+    input [BINARY_WIDTH-1:0] binary,  // 参数化位宽的二进制输入
 
-//     output reg [BCD_WIDTH-1:0] bcd  // 参数化位宽的BCD输出
-// );
-//     integer i, j;
-//     always @(binary) begin
-//         bcd = {BCD_WIDTH{1'b0}};  // 初始化BCD输出为0
+    output reg [BCD_WIDTH-1:0] bcd  // 参数化位宽的BCD输出
+);
+    integer i, j;
+    always @(binary) begin
+        bcd = {BCD_WIDTH{1'b0}};  // 初始化BCD输出为0
 
-//         // 移位和加3算法
-//         for (i = BINARY_WIDTH - 1; i >= 0; i = i - 1) begin
-//             // 检查每个BCD位是否大于等于5
-//             for (j = 0; j < (BCD_WIDTH >> 2); j = j + 1) begin
-//                 if (bcd[(j<<2)+:4] >= 5) begin
-//                     bcd[(j<<2)+:4] = bcd[(j<<2)+:4] + 3;
-//                 end
-//             end
-//             // 左移一位并添加当前二进制位
-//             bcd = {bcd[BCD_WIDTH-2:0], binary[i]};
-//         end
-//     end
-// endmodule
+        // 移位和加3算法
+        for (i = BINARY_WIDTH - 1; i >= 0; i = i - 1) begin
+            // 检查每个BCD位是否大于等于5
+            for (j = 0; j < (BCD_WIDTH >> 2); j = j + 1) begin
+                if (bcd[(j<<2)+:4] >= 5) begin
+                    bcd[(j<<2)+:4] = bcd[(j<<2)+:4] + 3;
+                end
+            end
+            // 左移一位并添加当前二进制位
+            bcd = {bcd[BCD_WIDTH-2:0], binary[i]};
+        end
+    end
+endmodule
